@@ -5,7 +5,7 @@ A floating padlock that freezes the screen.
 Tap it and the display stops taking touches — the app underneath keeps showing,
 but nothing responds. Tap the padlock again and the phone is yours again.
 
-No root. No accessibility service. No dependencies. 549 KB, typefaces included.
+No root. No accessibility service. No dependencies. Under 600 KB, typefaces included.
 
 ![The VeLock home screen](docs/screen-home.png)
 
