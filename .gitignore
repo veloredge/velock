@@ -35,3 +35,6 @@ desktop.ini
 dist/
 release/
 keystore.properties
+
+# Stray build logs
+lint-out.txt
