@@ -1,0 +1,60 @@
+name: Bug report
+description: Something froze, refused to unlock, or crashed.
+title: "[Bug] "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for the report. If the screen is currently stuck, stop the lock from
+        the Quick Settings tile or the status notification before filling this in.
+
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened
+      description: Describe the behaviour and what you expected instead.
+      placeholder: I tapped the padlock, the screen froze, and the padlock never came back.
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Add the Display Lock tile
+        2. Tap it
+        3. Tap the padlock
+        4. ...
+    validations:
+      required: true
+
+  - type: input
+    id: device
+    attributes:
+      label: Device and Android version
+      placeholder: Redmi 12C, Android 14 (HyperOS)
+    validations:
+      required: true
+
+  - type: dropdown
+    id: frequency
+    attributes:
+      label: How often
+      options:
+        - Every time
+        - Most of the time
+        - Occasionally
+        - Only once
+    validations:
+      required: true
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logcat (optional)
+      description: Output of `adb logcat -d` filtered to the app, with personal data removed.
+      render: shell
+    validations:
+      required: false

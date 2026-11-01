@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">VeLock</string>
+    <string name="tile_label">Display Lock</string>
+    <string name="tile_subtitle_off">Off</string>
+    <string name="tile_subtitle_active">Padlock on screen</string>
+    <string name="tile_subtitle_locked">Screen frozen</string>
+
+    <string name="chip_off">OFF</string>
+    <string name="chip_active">ACTIVE</string>
+    <string name="chip_locked">LOCKED</string>
+
+    <string name="headline">Tap to freeze\nthe screen.</string>
+    <string name="lede">One floating padlock that stops the display from taking touches. Tap it to freeze whatever you are doing, tap it again to let go.</string>
+
+    <string name="primary_enable">Turn on the floating lock</string>
+    <string name="primary_disable">Turn off the floating lock</string>
+    <string name="primary_grant">Allow drawing over other apps</string>
+    <string name="secondary_freeze">Freeze the screen now</string>
+
+    <string name="card_label">SETUP</string>
+    <string name="row_overlay">Draw over other apps</string>
+    <string name="row_notification">Status notification</string>
+    <string name="row_tile">Quick Settings tile</string>
+    <string name="state_allowed">Allowed</string>
+    <string name="state_required">Required</string>
+    <string name="state_optional">Optional</string>
+    <string name="state_not_needed">Not needed</string>
+    <string name="state_tile_hint">Add from the shade</string>
+    <string name="tile_hint">Pull the shade down, tap the pencil, then drag <b>Display Lock</b> into your tiles.</string>
+
+    <string name="steps_label">HOW IT WORKS</string>
+    <string name="step_one">Tap the tile to float the padlock over anything you are doing.</string>
+    <string name="step_two">Tap the padlock to freeze. Tap the empty screen to bring it back, then tap the padlock to release.</string>
+    <string name="step_three">Drag the padlock to move it. Drop it on the bin to remove it.</string>
+    <string name="step_one_number">1</string>
+    <string name="step_two_number">2</string>
+    <string name="step_three_number">3</string>
+
+    <string name="footnote">Quiet by design: no wake locks, no polling, no background scanning, nothing leaves the phone. While idle the cost is one small window; the full-screen layer only exists while the display is frozen.</string>
+
+    <string name="channel_name">Display lock</string>
+    <string name="channel_description">Shows while the floating padlock is on screen.</string>
+    <string name="notif_ready_title">Display lock ready</string>
+    <string name="notif_ready_text">Tap the floating padlock to freeze the screen.</string>
+    <string name="notif_locked_title">Screen frozen</string>
+    <string name="notif_locked_text">Tap the padlock to release the screen.</string>
+    <string name="notif_turn_off">Turn off</string>
+
+    <string name="toast_allow_overlay">Allow VeLock to draw over other apps, then tap the tile again.</string>
+    <string name="cd_emblem">Display lock</string>
+</resources>

@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="ink">#FF0A0D12</color>
+    <color name="ink_deep">#FF06080C</color>
+    <color name="hairline">#FF1B2330</color>
+
+    <color name="text_primary">#FFF2F5F9</color>
+    <color name="text_secondary">#FF98A2B3</color>
+    <color name="text_muted">#FF6B7585</color>
+
+    <color name="accent">#FFFFB020</color>
+    <color name="accent_top">#FFFFC44D</color>
+    <color name="accent_deep">#FFF2A20C</color>
+
+    <!-- Overlay palette -->
+    <color name="bubble_fill">#FF11161F</color>
+    <color name="bubble_border">#FFFFB020</color>
+    <color name="glyph_idle">#FFE8EDF5</color>
+    <color name="trash_fill">#EE0D121A</color>
+    <color name="trash_border">#33FFFFFF</color>
+    <color name="trash_glyph">#D0E8EDF5</color>
+
+    <color name="icon_background">#FF0A0D12</color>
+</resources>

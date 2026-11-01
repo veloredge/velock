@@ -1,0 +1,37 @@
+# Gradle
+.gradle/
+build/
+app/build/
+captures/
+.externalNativeBuild/
+.cxx/
+
+# Local configuration (machine specific SDK path)
+local.properties
+
+# Android Studio / IntelliJ
+.idea/
+*.iml
+*.ipr
+*.iws
+
+# Keystores and secrets — never commit these
+*.jks
+*.keystore
+*.p12
+keystore.properties
+secrets.properties
+
+# OS noise
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Logs and temp
+*.log
+*.hprof
+
+# Release artifacts and signing material stay local
+dist/
+release/
+keystore.properties
