@@ -44,7 +44,20 @@ public final class MainActivity extends Activity implements LockState.Observer {
         findViewById(R.id.row_overlay).setOnClickListener(v -> openOverlaySettings());
         findViewById(R.id.row_notification).setOnClickListener(v -> onNotificationRow());
 
-        if (getIntent().getBooleanExtra(EXTRA_NEEDS_OVERLAY, false)
+        hintIfOverlayMissing(getIntent());
+    }
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        setIntent(intent);
+        hintIfOverlayMissing(intent);
+        refresh();
+    }
+
+    private void hintIfOverlayMissing(Intent intent) {
+        if (intent != null
+                && intent.getBooleanExtra(EXTRA_NEEDS_OVERLAY, false)
                 && !Settings.canDrawOverlays(this)) {
             Toast.makeText(this, R.string.toast_allow_overlay, Toast.LENGTH_LONG).show();
         }
@@ -102,15 +115,34 @@ public final class MainActivity extends Activity implements LockState.Observer {
             return;
         }
         if (checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS)
-                != PackageManager.PERMISSION_GRANTED) {
-            requestPermissions(new String[]{Manifest.permission.POST_NOTIFICATIONS},
-                    REQUEST_NOTIFICATIONS);
+                == PackageManager.PERMISSION_GRANTED) {
+            openNotificationSettings();
+            return;
+        }
+        requestPermissions(new String[]{Manifest.permission.POST_NOTIFICATIONS},
+                REQUEST_NOTIFICATIONS);
+    }
+
+    private void openNotificationSettings() {
+        Intent intent = new Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS)
+                .putExtra(Settings.EXTRA_APP_PACKAGE, getPackageName());
+        try {
+            startActivity(intent);
+        } catch (Exception ignored) {
+            // Some builds hide that screen; nothing else to offer.
         }
     }
 
     @Override
     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] results) {
         super.onRequestPermissionsResult(requestCode, permissions, results);
+        if (requestCode == REQUEST_NOTIFICATIONS
+                && results.length > 0
+                && results[0] != PackageManager.PERMISSION_GRANTED
+                && !shouldShowRequestPermissionRationale(Manifest.permission.POST_NOTIFICATIONS)) {
+            // Denied for good: the dialog will not come back, so open the real switch.
+            openNotificationSettings();
+        }
         refresh();
     }
 
@@ -120,7 +152,7 @@ public final class MainActivity extends Activity implements LockState.Observer {
         boolean overlayAllowed = Settings.canDrawOverlays(this);
         boolean running = LockState.running;
         boolean locked = LockState.locked;
-        boolean active = running || locked;
+        boolean active = running;
 
         chip.setText(locked ? R.string.chip_locked
                 : running ? R.string.chip_active : R.string.chip_off);

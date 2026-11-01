@@ -20,7 +20,7 @@ import android.view.animation.DecelerateInterpolator;
  * costs one small surface and no view hierarchy. Nothing runs between touches: the
  * pulse is a single one-shot animator that ends and leaves the view idle.
  */
-@SuppressLint({"ViewConstructor", "ClickableViewAccessibility"})
+@SuppressLint("ViewConstructor")
 final class BubbleView extends View {
 
     interface Host {
@@ -31,6 +31,9 @@ final class BubbleView extends View {
         void onBubbleDrag(float dx, float dy, float x, float y);
 
         void onBubbleDrop(float x, float y);
+
+        /** False while the padlock is invisible and may only be woken, never moved. */
+        boolean canDrag();
     }
 
     private static final int GLYPH_DP = 26;
@@ -98,6 +101,7 @@ final class BubbleView extends View {
         pulseAnim.addListener(new AnimatorListenerAdapter() {
             @Override
             public void onAnimationEnd(Animator animation) {
+                pulseAnim = null;
                 pulse = -1f;
                 invalidate();
             }
@@ -152,6 +156,9 @@ final class BubbleView extends View {
                 float dx = event.getRawX() - downRawX;
                 float dy = event.getRawY() - downRawY;
                 if (!dragging && dx * dx + dy * dy > slop * slop) {
+                    if (!host.canDrag()) {
+                        return true;
+                    }
                     dragging = true;
                     host.onBubbleDragStart();
                 }
@@ -171,6 +178,7 @@ final class BubbleView extends View {
                     dragging = false;
                     host.onBubbleDrop(event.getRawX(), event.getRawY());
                 } else {
+                    performClick();
                     haptic();
                     host.onBubbleTap();
                 }
@@ -202,6 +210,18 @@ final class BubbleView extends View {
         dragging = false;
         setScaleX(1f);
         setScaleY(1f);
+        if (pulseAnim != null) {
+            pulseAnim.cancel();
+            pulseAnim = null;
+        }
+        pulse = -1f;
+    }
+
+    @Override
+    public boolean performClick() {
+        // The padlock is an overlay control, not part of a view hierarchy, but announcing
+        // the click keeps assistive technology and the lint contract honest.
+        return super.performClick();
     }
 
     private void spring(float scale) {

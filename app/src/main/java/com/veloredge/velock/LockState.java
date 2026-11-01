@@ -20,18 +20,18 @@ final class LockState {
     static volatile boolean running;
     static volatile boolean locked;
 
-    private static WeakReference<Observer> observer = new WeakReference<>(null);
+    private static WeakReference<Observer> observer;
 
     private LockState() {
     }
 
     static void observe(Observer o) {
-        observer = new WeakReference<>(o);
+        observer = o == null ? null : new WeakReference<>(o);
     }
 
     /** Tells the activity (if it is on screen) and the system tile that state moved. */
     static void publish(Context context) {
-        Observer o = observer.get();
+        Observer o = observer == null ? null : observer.get();
         if (o != null) {
             o.onLockStateChanged();
         }

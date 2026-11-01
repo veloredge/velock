@@ -31,7 +31,6 @@
 
         <service
             android:name=".LockOverlayService"
-            android:configChanges="orientation|screenSize|smallestScreenSize|screenLayout|keyboardHidden|density|uiMode"
             android:exported="false"
             android:foregroundServiceType="specialUse">
             <property

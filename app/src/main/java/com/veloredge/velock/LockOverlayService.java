@@ -53,6 +53,8 @@ public final class LockOverlayService extends Service
 
     private WindowManager windowManager;
     private int bubbleSize;
+    private int screenWidth;
+    private int screenHeight;
 
     private BubbleView bubble;
     private WindowManager.LayoutParams bubbleParams;
@@ -64,6 +66,7 @@ public final class LockOverlayService extends Service
 
     private boolean locked;
     private boolean revealed;
+    private boolean stopping;
     private int dragStartX;
     private int dragStartY;
 
@@ -92,6 +95,12 @@ public final class LockOverlayService extends Service
     }
 
     private static void launch(Context context, String action) {
+        if (ACTION_STOP.equals(action)) {
+            // Stopping is not a foreground start; asking for one can throw on Android 12+
+            // and would raise a notification just to tear it down again.
+            context.stopService(new Intent(context, LockOverlayService.class));
+            return;
+        }
         Intent intent = new Intent(context, LockOverlayService.class).setAction(action);
         try {
             context.startForegroundService(intent);
@@ -113,7 +122,7 @@ public final class LockOverlayService extends Service
     public void onCreate() {
         super.onCreate();
         windowManager = (WindowManager) getSystemService(WINDOW_SERVICE);
-        bubbleSize = Ui.dp(this, BUBBLE_DP);
+        refreshMetrics();
         createChannel();
         goForeground();
         LockState.running = true;
@@ -148,9 +157,10 @@ public final class LockOverlayService extends Service
 
     @Override
     public void onDestroy() {
+        stopping = true;
         detachBubble();
         removeShield();
-        hideTrash();
+        removeTrashNow();
         handler.removeCallbacksAndMessages(null);
         LockState.running = false;
         LockState.locked = false;
@@ -159,9 +169,13 @@ public final class LockOverlayService extends Service
     }
 
     private void shutdown() {
+        if (stopping) {
+            return;
+        }
+        stopping = true;
         detachBubble();
         removeShield();
-        hideTrash();
+        removeTrashNow();
         handler.removeCallbacksAndMessages(null);
         locked = false;
         LockState.running = false;
@@ -192,7 +206,16 @@ public final class LockOverlayService extends Service
             locked = true;
             LockState.locked = true;
 
-            raiseBubble();
+            if (!raiseBubble()) {
+                // Without a padlock above the shield the phone would be frozen with no way
+                // out. Undo the freeze instead.
+                removeShield();
+                locked = false;
+                LockState.locked = false;
+                updateNotification();
+                LockState.publish(this);
+                return;
+            }
             bubble.setLocked(true);
             revealed = true;
             applyBubbleAlpha();
@@ -259,10 +282,15 @@ public final class LockOverlayService extends Service
     @Override
     public void onConfigurationChanged(Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
-        // Rotation changes the usable area; keep the padlock where the user can reach it.
+        // Rotation or a display-size change moves the usable area and rescales dp, so the
+        // padlock is remeasured and pulled back into reach.
+        hideTrash();
+        refreshMetrics();
         if (bubble == null || bubbleParams == null) {
             return;
         }
+        bubbleParams.width = bubbleSize;
+        bubbleParams.height = bubbleSize;
         bubbleParams.x = clampX(bubbleParams.x);
         bubbleParams.y = clampY(bubbleParams.y);
         try {
@@ -280,12 +308,11 @@ public final class LockOverlayService extends Service
         }
         bubble = new BubbleView(this, this);
 
-        Point screen = screen();
         int x = Store.x(this);
         int y = Store.y(this);
         if (x < 0 || y < 0) {
-            x = screen.x - bubbleSize - Ui.dp(this, 10);
-            y = Math.round(screen.y * 0.30f);
+            x = screenWidth - bubbleSize - Ui.dp(this, 10);
+            y = Math.round(screenHeight * 0.30f);
         }
 
         bubbleParams = new WindowManager.LayoutParams(
@@ -329,10 +356,15 @@ public final class LockOverlayService extends Service
         }
     }
 
-    /** Re-adds the padlock so it sits above the freshly attached shield. */
-    private void raiseBubble() {
+    /**
+     * Re-adds the padlock so it sits above the freshly attached shield.
+     *
+     * @return false when the window could not be re-attached, in which case the caller must
+     *     not freeze the screen.
+     */
+    private boolean raiseBubble() {
         if (bubble == null || bubbleParams == null) {
-            return;
+            return false;
         }
         int x = bubbleParams.x;
         int y = bubbleParams.y;
@@ -346,10 +378,13 @@ public final class LockOverlayService extends Service
         bubbleParams.y = y;
         try {
             windowManager.addView(bubble, bubbleParams);
-        } catch (Exception ignored) {
-            // If it cannot come back the shield still stands; unlock clears both.
+        } catch (Exception e) {
+            bubble = null;
+            bubbleParams = null;
+            return false;
         }
         bubble.setAlpha(revealed ? ALPHA_REVEALED : ALPHA_HIDDEN);
+        return true;
     }
 
     private void removeBubble() {
@@ -409,6 +444,13 @@ public final class LockOverlayService extends Service
     // ---------------------------------------------------------------- drag and drop
 
     @Override
+    public boolean canDrag() {
+        // A padlock the user cannot see must not be draggable: a swipe over the invisible
+        // spot would otherwise drop the lock on the bin and thaw the screen unseen.
+        return !locked || revealed;
+    }
+
+    @Override
     public void onBubbleDragStart() {
         if (bubbleParams == null) {
             return;
@@ -450,11 +492,14 @@ public final class LockOverlayService extends Service
         Store.save(this, bubbleParams.x, bubbleParams.y);
     }
 
+    private int trashSize() {
+        return Ui.dp(this, TRASH_DP);
+    }
+
     private Point trashCenter() {
-        Point screen = screen();
-        int size = Ui.dp(this, TRASH_DP);
-        return new Point((screen.x - size) / 2 + size / 2,
-                screen.y - Ui.dp(this, TRASH_MARGIN_DP) - size + size / 2);
+        int size = trashSize();
+        return new Point((screenWidth - size) / 2 + size / 2,
+                screenHeight - Ui.dp(this, TRASH_MARGIN_DP) - size + size / 2);
     }
 
     private boolean isOverTrash(int x, int y) {
@@ -468,7 +513,7 @@ public final class LockOverlayService extends Service
             return;
         }
         trash = new TrashView(this);
-        int size = Ui.dp(this, TRASH_DP);
+        int size = trashSize();
         trashParams = new WindowManager.LayoutParams(
                 size, size,
                 WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,
@@ -478,10 +523,9 @@ public final class LockOverlayService extends Service
                         | WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS
                         | WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED,
                 PixelFormat.TRANSLUCENT);
-        Point screen = screen();
         trashParams.gravity = Gravity.TOP | Gravity.START;
-        trashParams.x = (screen.x - size) / 2;
-        trashParams.y = screen.y - Ui.dp(this, TRASH_MARGIN_DP) - size;
+        trashParams.x = (screenWidth - size) / 2;
+        trashParams.y = screenHeight - Ui.dp(this, TRASH_MARGIN_DP) - size;
         trashParams.setTitle("VeLock remove target");
         if (Build.VERSION.SDK_INT >= 30) {
             trashParams.layoutInDisplayCutoutMode =
@@ -502,6 +546,10 @@ public final class LockOverlayService extends Service
     }
 
     private void hideTrash() {
+        if (stopping) {
+            removeTrashNow();
+            return;
+        }
         if (trash == null) {
             return;
         }
@@ -519,24 +567,44 @@ public final class LockOverlayService extends Service
                 .start();
     }
 
+    /** Drops the bin immediately; used on the way out so nothing is left behind. */
+    private void removeTrashNow() {
+        TrashView view = trash;
+        trash = null;
+        trashParams = null;
+        if (view == null) {
+            return;
+        }
+        try {
+            windowManager.removeViewImmediate(view);
+        } catch (Exception ignored) {
+            // Already gone.
+        }
+    }
+
     // ---------------------------------------------------------------- geometry
 
-    private Point screen() {
+    /** Measured at start and on every configuration change, never inside a touch move. */
+    private void refreshMetrics() {
+        bubbleSize = Ui.dp(this, BUBBLE_DP);
         if (Build.VERSION.SDK_INT >= 30) {
             Rect bounds = windowManager.getCurrentWindowMetrics().getBounds();
-            return new Point(bounds.width(), bounds.height());
+            screenWidth = bounds.width();
+            screenHeight = bounds.height();
+        } else {
+            DisplayMetrics metrics = new DisplayMetrics();
+            windowManager.getDefaultDisplay().getRealMetrics(metrics);
+            screenWidth = metrics.widthPixels;
+            screenHeight = metrics.heightPixels;
         }
-        DisplayMetrics metrics = new DisplayMetrics();
-        windowManager.getDefaultDisplay().getRealMetrics(metrics);
-        return new Point(metrics.widthPixels, metrics.heightPixels);
     }
 
     private int clampX(int x) {
-        return Math.max(0, Math.min(x, screen().x - bubbleSize));
+        return Math.max(0, Math.min(x, screenWidth - bubbleSize));
     }
 
     private int clampY(int y) {
-        return Math.max(0, Math.min(y, screen().y - bubbleSize));
+        return Math.max(0, Math.min(y, screenHeight - bubbleSize));
     }
 
     // ---------------------------------------------------------------- notification

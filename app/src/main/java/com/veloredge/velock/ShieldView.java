@@ -12,7 +12,7 @@ import android.view.View;
  * non-rooted device: the screen still shows, but it stops taking input. The hardware
  * keys and the system gesture areas stay with the system, as Android requires.
  */
-@SuppressLint({"ViewConstructor", "ClickableViewAccessibility"})
+@SuppressLint("ViewConstructor")
 final class ShieldView extends View {
 
     interface Host {
@@ -33,9 +33,15 @@ final class ShieldView extends View {
     @Override
     public boolean onTouchEvent(MotionEvent event) {
         if (event.getActionMasked() == MotionEvent.ACTION_DOWN) {
+            performClick();
             host.onShieldTap();
         }
         return true;
+    }
+
+    @Override
+    public boolean performClick() {
+        return super.performClick();
     }
 
     @Override
