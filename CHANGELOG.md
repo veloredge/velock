@@ -44,6 +44,14 @@ First public release.
   notification row falls back to the app's notification settings when the
   permission dialog can no longer appear.
 
+### Performance
+
+- Drag layout updates are coalesced to one window transaction per frame, so the
+  padlock follows the finger instead of queueing layout work at touch sampling
+  rate.
+- Tighter motion: the padlock wakes in 120 ms, fades out over 300 ms, and the
+  press feedback lands in 90 ms.
+
 ### Notes
 
 - No wake locks, no polling, no repeating timers, no analytics, no internet

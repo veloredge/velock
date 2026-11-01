@@ -67,8 +67,25 @@ public final class LockOverlayService extends Service
     private boolean locked;
     private boolean revealed;
     private boolean stopping;
+    private boolean dragFramePending;
     private int dragStartX;
     private int dragStartY;
+
+    /** Applies the latest drag position once per frame rather than once per touch sample. */
+    private final Runnable applyDragFrame = new Runnable() {
+        @Override
+        public void run() {
+            dragFramePending = false;
+            if (bubble == null || bubbleParams == null) {
+                return;
+            }
+            try {
+                windowManager.updateViewLayout(bubble, bubbleParams);
+            } catch (Exception ignored) {
+                // Window detached mid-drag.
+            }
+        }
+    };
 
     private final Runnable dimBubble = new Runnable() {
         @Override
@@ -158,6 +175,7 @@ public final class LockOverlayService extends Service
     @Override
     public void onDestroy() {
         stopping = true;
+        dragFramePending = false;
         detachBubble();
         removeShield();
         removeTrashNow();
@@ -173,6 +191,7 @@ public final class LockOverlayService extends Service
             return;
         }
         stopping = true;
+        dragFramePending = false;
         detachBubble();
         removeShield();
         removeTrashNow();
@@ -242,7 +261,7 @@ public final class LockOverlayService extends Service
             return;
         }
         float target = !locked ? ALPHA_IDLE : (revealed ? ALPHA_REVEALED : ALPHA_HIDDEN);
-        long duration = target == ALPHA_HIDDEN ? 420L : 160L;
+        long duration = target == ALPHA_HIDDEN ? 300L : 120L;
         bubble.animate().alpha(target).setDuration(duration).start();
     }
 
@@ -392,7 +411,7 @@ public final class LockOverlayService extends Service
             shutdown();
             return;
         }
-        bubble.animate().alpha(0f).scaleX(0.4f).scaleY(0.4f).setDuration(130L)
+        bubble.animate().alpha(0f).scaleX(0.4f).scaleY(0.4f).setDuration(110L)
                 .withEndAction(this::shutdown)
                 .start();
     }
@@ -468,10 +487,9 @@ public final class LockOverlayService extends Service
         }
         bubbleParams.x = clampX(dragStartX + Math.round(dx));
         bubbleParams.y = clampY(dragStartY + Math.round(dy));
-        try {
-            windowManager.updateViewLayout(bubble, bubbleParams);
-        } catch (Exception ignored) {
-            return;
+        if (!dragFramePending) {
+            dragFramePending = true;
+            handler.post(applyDragFrame);
         }
         if (trash != null) {
             trash.setHot(isOverTrash(Math.round(x), Math.round(y)));
@@ -542,7 +560,7 @@ public final class LockOverlayService extends Service
             trashParams = null;
             return;
         }
-        trash.animate().alpha(1f).scaleX(1f).scaleY(1f).setDuration(140L).start();
+        trash.animate().alpha(1f).scaleX(1f).scaleY(1f).setDuration(110L).start();
     }
 
     private void hideTrash() {
@@ -556,7 +574,7 @@ public final class LockOverlayService extends Service
         final TrashView view = trash;
         trash = null;
         trashParams = null;
-        view.animate().alpha(0f).scaleX(0.8f).scaleY(0.8f).setDuration(120L)
+        view.animate().alpha(0f).scaleX(0.8f).scaleY(0.8f).setDuration(96L)
                 .withEndAction(() -> {
                     try {
                         windowManager.removeViewImmediate(view);

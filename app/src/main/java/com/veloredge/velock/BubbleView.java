@@ -226,7 +226,7 @@ final class BubbleView extends View {
 
     private void spring(float scale) {
         animate().scaleX(scale).scaleY(scale)
-                .setDuration(120L)
+                .setDuration(90L)
                 .setInterpolator(new DecelerateInterpolator())
                 .start();
     }

@@ -54,7 +54,7 @@ final class TrashView extends View {
         }
         hot = value;
         applyColors();
-        animate().scaleX(hot ? 1.12f : 1f).scaleY(hot ? 1.12f : 1f).setDuration(120L).start();
+        animate().scaleX(hot ? 1.12f : 1f).scaleY(hot ? 1.12f : 1f).setDuration(90L).start();
         invalidate();
     }
 
