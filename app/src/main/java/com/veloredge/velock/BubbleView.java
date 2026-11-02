@@ -64,7 +64,7 @@ final class BubbleView extends View {
 
         glyphClosed = context.getDrawable(R.drawable.ic_lock_closed).mutate();
         glyphOpen = context.getDrawable(R.drawable.ic_lock_open).mutate();
-        glyphClosed.setTint(context.getColor(R.color.accent));
+        glyphClosed.setTint(context.getColor(R.color.glyph_idle));
         glyphOpen.setTint(context.getColor(R.color.glyph_idle));
 
         fill.setColor(context.getColor(R.color.bubble_fill));
@@ -72,10 +72,11 @@ final class BubbleView extends View {
         border.setStyle(Paint.Style.STROKE);
         border.setStrokeWidth(Ui.dpf(context, 1.2f));
         border.setColor(context.getColor(R.color.bubble_border));
+        border.setAlpha(0x59);
 
         pulsePaint.setStyle(Paint.Style.STROKE);
         pulsePaint.setStrokeWidth(Ui.dpf(context, 1.6f));
-        pulsePaint.setColor(context.getColor(R.color.accent));
+        pulsePaint.setColor(context.getColor(R.color.glyph_idle));
     }
 
     void setLocked(boolean value) {
@@ -122,7 +123,8 @@ final class BubbleView extends View {
         final float cy = getHeight() * 0.5f;
         final float radius = Math.min(cx, cy) - Ui.dpf(getContext(), 4f);
 
-        border.setAlpha(locked ? 0x8C : 0x3D);
+        // One ring strength for both states; the padlock never changes colour or
+        // emphasis when it freezes, only its glyph.
         canvas.drawCircle(cx, cy, radius, fill);
         canvas.drawCircle(cx, cy, radius, border);
 

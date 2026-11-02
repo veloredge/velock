@@ -14,7 +14,7 @@
 
     <!-- Overlay palette -->
     <color name="bubble_fill">#FF11161F</color>
-    <color name="bubble_border">#FFFFB020</color>
+    <color name="bubble_border">#FFFFFFFF</color>
     <color name="glyph_idle">#FFE8EDF5</color>
     <color name="trash_fill">#EE0D121A</color>
     <color name="trash_border">#33FFFFFF</color>

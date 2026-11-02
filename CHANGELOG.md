@@ -6,6 +6,21 @@ the project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html
 
 ## [Unreleased]
 
+## [1.0.1] — 2026-11-02
+
+### Changed
+
+- The APK is 96 KB instead of 583 KB. The two bundled typefaces are now subset
+  to the glyphs and weights the interface uses and pinned to single instances
+  with `fontTools`, which drops the font payload from 990 KB to 75 KB. Rendering
+  is unchanged.
+- A frozen padlock looks exactly like an idle one: same neutral tone, same
+  opacity, same ring. Only the glyph differs, open shackle while unlocked and
+  seated shackle with a keyhole while frozen.
+- The wake is temporary again. Waking the padlock gives it another three seconds
+  and then it fades out, every time, rather than staying visible until it is
+  used.
+
 ## [1.0.0] — 2026-11-02
 
 First public release.

@@ -5,7 +5,7 @@ A floating padlock that freezes the screen.
 Tap it and the display stops taking touches — the app underneath keeps showing,
 but nothing responds. Tap the padlock again and the phone is yours again.
 
-No root. No accessibility service. No dependencies. Under 600 KB, typefaces included.
+No root. No accessibility service. No dependencies. 96 KB, typefaces included.
 
 ![The VeLock home screen](docs/screen-home.png)
 
@@ -39,10 +39,11 @@ and the status notification can stop it from anywhere.
    into your Quick Settings tiles.
 2. **Tap the tile.** A small padlock floats above whatever you are doing.
    Drag it wherever you like — the position is remembered.
-3. **Tap the padlock.** The screen freezes. The padlock stays visible for three
-   seconds, then fades out completely so the screen looks untouched.
-4. **Tap anywhere on the frozen screen.** The padlock wakes up at full strength and
-   stays visible until you use it. Tap it to release the screen. While it is
+3. **Tap the padlock.** The screen freezes. The padlock looks exactly as it did
+   before — same neutral tone, same opacity, only the glyph closes — and after
+   three seconds it fades out completely so the screen looks untouched.
+4. **Tap anywhere on the frozen screen.** The padlock wakes for another three
+   seconds; tap it to release the screen, or let it fade again. While it is
    invisible, a tap or a swipe across it only wakes it — it never unlocks, and it
    can never be dragged away, because acting on something you cannot see is
    exactly what the lock exists to prevent.
@@ -57,7 +58,7 @@ and the status notification can stop it from anywhere.
 
 1. Open the latest release **on your phone**:
    <https://github.com/veloredge/velock/releases/latest>
-2. Download `VeLock-1.0.0.apk`.
+2. Download `VeLock-1.0.1.apk`.
 3. Tap the downloaded file. If Android asks, allow **Install unknown apps** for
    your browser once, then tap **Install**.
 4. Open **VeLock** and allow **Draw over other apps** — the button takes you

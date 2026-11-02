@@ -41,8 +41,8 @@ public final class LockOverlayService extends Service
 
     private static final float ALPHA_IDLE = 0.46f;
     private static final float ALPHA_HIDDEN = 0f;
+    private static final float ALPHA_REVEALED = ALPHA_IDLE;
     private static final long HIDE_DELAY_MS = 3000L;
-    private static final float ALPHA_REVEALED = 1f;
 
     private static final int BUBBLE_DP = 64;
     private static final int TRASH_DP = 68;
@@ -265,7 +265,10 @@ public final class LockOverlayService extends Service
         bubble.animate().alpha(target).setDuration(duration).start();
     }
 
-    /** Brings a hidden padlock back to full strength; used by a tap on the frozen screen. */
+    /**
+     * Wakes a hidden padlock for another {@link #HIDE_DELAY_MS}, then it fades again.
+     * A tap on the frozen screen is the only way in, so it must not be permanent.
+     */
     private void reveal() {
         handler.removeCallbacks(dimBubble);
         revealed = true;
@@ -273,6 +276,7 @@ public final class LockOverlayService extends Service
         if (bubble != null) {
             bubble.pulse();
         }
+        handler.postDelayed(dimBubble, HIDE_DELAY_MS);
     }
 
     @Override
@@ -508,6 +512,10 @@ public final class LockOverlayService extends Service
             return;
         }
         Store.save(this, bubbleParams.x, bubbleParams.y);
+        if (locked && revealed) {
+            handler.removeCallbacks(dimBubble);
+            handler.postDelayed(dimBubble, HIDE_DELAY_MS);
+        }
     }
 
     private int trashSize() {

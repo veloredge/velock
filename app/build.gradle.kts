@@ -23,8 +23,8 @@ android {
         // Deliberately 34: it keeps the overlay and activity layout behaviour this app
         // was verified against, including non edge-to-edge activities.
         targetSdk = 34
-        versionCode = 1
-        versionName = "1.0.0"
+        versionCode = 2
+        versionName = "1.0.1"
     }
 
     signingConfigs {
